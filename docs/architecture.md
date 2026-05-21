@@ -8,40 +8,6 @@
 
 ---
 
-## System Overview
-
-```mermaid
-graph TD
-    User["👤 User"] --> Auth["Swiggy OAuth"]
-    Auth --> App["SwiggyLens\nNext.js App"]
-    
-    App --> AgentRoute["/api/agent\nOrchestrator"]
-    
-    AgentRoute --> Claude["Claude Sonnet\nAI Agent"]
-    
-    Claude --> FoodMCP["swiggy-food MCP\nget_food_orders\nget_food_order_details\nget_addresses"]
-    Claude --> DineoutMCP["swiggy-dineout MCP\ndine-in history\noccasion frequency\nspend patterns"]
-    Claude --> InstamrtMCP["swiggy-instamart MCP\ngrocery patterns\nbasket analysis\nreplenishment rhythm"]
-    
-    FoodMCP --> Claude
-    DineoutMCP --> Claude
-    InstamrtMCP --> Claude
-    
-    Claude --> Reasoning["Cross-vertical\nReasoning Loop"]
-    
-    Reasoning --> FoodMode["Food Mode\nDetection"]
-    Reasoning --> Insights["Proactive\nInsight Cards"]
-    Reasoning --> Chat["Chat\nResponse"]
-    
-    FoodMode --> Frontend["Frontend\nNext.js + Tailwind"]
-    Insights --> Frontend
-    Chat --> Frontend
-    
-    Frontend --> User
-```
-
----
-
 ## Data Flow
 
 ### On App Open (Proactive Insights)
