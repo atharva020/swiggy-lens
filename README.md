@@ -2,7 +2,7 @@
 
 > **See your food life clearly — powered by Swiggy MCP**
 
-SwiggyLens is an AI agent that connects to your Swiggy account across all three verticals — food delivery, dine-in, and Instamart — and tells you things about your food behavior that no single vertical ever could.
+SwiggyLens is an AI agent that connects to your Swiggy account across all three verticals — food delivery, dineout, and Instamart — and tells you things about your food behavior that no single vertical ever could.
 
 ---
 
@@ -33,18 +33,15 @@ SwiggyLens detects your current food mode **automatically, every time you open t
 ### Proactive Insight Cards
 No prompting needed. Open the app and see:
 - Your current food mode with context
-- Behavioral shifts from last month
-- Spending patterns across all three verticals
-- Cuisine preferences evolving over time
+- What changed compared to last month
+- How much you spent across all three verticals
+- Which cuisines you've been gravitating toward
 
 ### Natural Language Chat
-Ask anything about your order history across all three verticals:
+Ask anything about your order history:
 - *"How much did I spend on food last month across everything?"*
 - *"When was the last time I cooked at home consistently?"*
 - *"What's my most ordered cuisine on weeknights?"*
-
-### Food Personality Profile
-A shareable summary of your food identity — built from months of real behavioral data, not surveys.
 
 ---
 
@@ -76,7 +73,7 @@ SwiggyLens (Next.js)
         ↓
 Claude Sonnet Agent (Anthropic API)
    ├── swiggy-food MCP tools    → order history, details, patterns
-   ├── swiggy-dineout MCP tools → dine-in occasions, frequency
+   ├── swiggy-dineout MCP tools → dineout occasions, frequency
    └── swiggy-instamart MCP tools → grocery patterns, basket analysis
         ↓
 Cross-vertical reasoning in a single agent loop
@@ -105,13 +102,13 @@ See [full architecture →](docs/architecture.md)
 
 ## MCP Integration
 
-SwiggyLens calls Swiggy's MCP tools across all three verticals in a **single Claude reasoning loop**:
+SwiggyLens calls Swiggy's MCP tools across all three verticals in a single Claude reasoning loop:
 
-- `get_food_orders` + `get_food_order_details` — delivery history and patterns
-- Dine-out tools — social dining behavior and frequency  
-- Instamart tools — grocery patterns and basket intelligence
+- `get_food_orders` + `get_food_order_details` — delivery history, what you ordered and when
+- Dineout tools — how often you go out, where, how much you spend
+- Instamart tools — grocery patterns, what you're buying, how regularly
 
-Claude receives all three tool sets simultaneously and reasons over the combined dataset to produce food mode detection and behavioral insights.
+All three tool sets go to Claude at once. It doesn't call one, wait, then call the next — it has everything in one pass and reasons across all of it together.
 
 See [full MCP integration details →](docs/mcp-integration.md)
 

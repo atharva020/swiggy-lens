@@ -40,10 +40,10 @@ Tools used for:
 ### swiggy-instamart
 
 Tools used for:
-- Grocery order frequency and basket value
-- Ingredient patterns (raw ingredients vs ready-to-eat)
-- Cooking mode signal detection (fresh produce, staples)
-- Consumption rhythm and replenishment frequency
+- How often grocery orders are placed and what the basket value looks like
+- What kind of items are being bought — raw ingredients vs packaged/ready food
+- Whether fresh produce and staples are showing up (cooking mode signal)
+- How regularly someone restocks the same items
 
 ---
 
@@ -51,11 +51,10 @@ Tools used for:
 
 The Claude agent receives a system prompt that instructs it to:
 
-1. Call `get_food_orders` with a 90-day lookback window
-2. Call Instamart history tools for the same period
-3. Call Dineout history tools for the same period
-4. Analyze the combined dataset for food mode signals
-5. Return structured JSON with mode, confidence, and insight card text
+1. Fetch the last 90 days of data from all three verticals — this gives enough history to spot patterns and shifts
+2. Use the most recent 14 days as the active window for food mode detection — recent behavior matters more than what happened 2 months ago
+3. Compare the active window against the prior 30-day period to detect changes
+4. Return structured JSON with mode, confidence, and insight card text
 
 ```
 System: You are SwiggyLens, a cross-vertical food intelligence agent. 
@@ -74,14 +73,12 @@ Return structured output: { mode, confidence, insights[], data_points[] }
 
 ---
 
-## Why This Integration Is Unique
+## Why This Integration Is Different
 
-Most MCP integrations treat the server as a simple data API — fetch data, display it. SwiggyLens treats the MCP server as a **reasoning substrate**.
+Most apps that use Swiggy's MCP will fetch data and display it — order history, spend totals, that kind of thing. SwiggyLens does something different: Claude gets all three tool sets at once and figures out what the combination means.
 
-Claude doesn't just retrieve data from Swiggy's tools. It uses the combined output of all three tool sets to perform behavioral analysis that produces insights no single vertical could generate alone.
+The difference in practice:
+- Single vertical: *"You ordered 47 times last month"*
+- Cross-vertical: *"You've shifted from Cooking Mode to Ordering Mode over the last 10 days — Instamart activity dropped 70% while delivery doubled"*
 
-This is the difference between:
-- "You ordered 47 times last month" (single-vertical retrieval)
-- "You've shifted from Cooking Mode to Ordering Mode over the last 10 days — your Instamart activity dropped 70% while delivery frequency doubled. This usually happens during work crunches." (cross-vertical intelligence)
-
-The MCP server makes the first possible. SwiggyLens is built to make the second real.
+The first is just retrieval. The second requires seeing both sides at the same time, which is only possible because Swiggy has both.

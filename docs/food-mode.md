@@ -59,19 +59,13 @@ Because food behavior is not one-dimensional. A person who orders a lot of birya
 
 ## Detection Logic
 
-Food mode is not a single data point — it's a weighted behavioral pattern across a rolling time window.
+Mode detection looks at the last 14 days, weighted so that recent days count more than older ones. Three signals get measured:
 
-```
-Rolling 14-day window:
-  → Instamart order count + basket value
-  → Food delivery order count + frequency
-  → Dine-in occasion count + spend
-  
-Weighting:
-  → Recent days weighted more than older days
-  → Mode assigned based on dominant signal cluster
-  → Confidence score surfaced when signals are mixed
-```
+- Instamart order count and basket value
+- Food delivery order count and how often
+- Dineout occasions and spend
+
+Whichever signal is clearly dominant determines the mode. If nothing is clearly dominant — say, both delivery and Instamart are active — it surfaces a transition state instead of forcing a label.
 
 **Mixed mode example:**
 > *"You're between modes right now — Instamart and delivery are both active. Could be a transition week."*
