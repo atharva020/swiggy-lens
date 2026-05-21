@@ -135,9 +135,11 @@ See [full roadmap →](docs/roadmap.md)
 
 ## Docs
 
+- [Why I'm building this](PROPOSAL.md) — the origin story and motivation
 - [The Food Mode Concept](docs/food-mode.md) — deep dive on the core idea
 - [Architecture](docs/architecture.md) — system design and data flow
 - [MCP Integration](docs/mcp-integration.md) — Swiggy MCP tools used and why
+- [User Stories](docs/user-stories.md) — real scenarios this is built for
 - [Roadmap](docs/roadmap.md) — v1 and beyond
 
 ---
