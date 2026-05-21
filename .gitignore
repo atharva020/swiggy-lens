@@ -1,0 +1,23 @@
+# Project meta (not for public repo)
+_bmad/
+_bmad-output/
+refrence/
+.agents/
+CONTEXT.md
+design-artifacts/
+
+# Claude Code
+.claude/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Next.js
+.next/
+out/
+node_modules/
+
+# OS
+.DS_Store
