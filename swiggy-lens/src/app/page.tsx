@@ -20,15 +20,20 @@ function getErrorMessage(error?: string) {
   return ERROR_MESSAGES[error] ?? decodeURIComponent(error);
 }
 
+const isDev = process.env.NODE_ENV === "development";
+const hasOAuthConfigured = Boolean(process.env.SWIGGY_CLIENT_ID?.trim());
+const hasDevToken = Boolean(process.env.SWIGGY_ACCESS_TOKEN?.trim());
+
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; connected?: string }>;
+  searchParams: Promise<{ error?: string; connected?: string; mode?: string }>;
 }) {
   const params = await searchParams;
   const session = await getSession();
   const isLoggedIn = isAccessTokenValid(session);
   const errorMessage = getErrorMessage(params.error);
+  const isDevMode = params.mode === "dev";
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -48,8 +53,9 @@ export default async function Home({
 
         {params.connected === "1" && (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            Connected to Swiggy. Your access token is stored securely in the
-            server session.
+            {isDevMode
+              ? "Dev mode: personal token loaded. Full MCP + agent pipeline ready to test."
+              : "Connected to Swiggy. Your access token is stored securely in the server session."}
           </div>
         )}
 
@@ -67,12 +73,31 @@ export default async function Home({
 
           <div className="flex flex-wrap gap-3">
             {!isLoggedIn ? (
-              <Link
-                href="/api/auth/login"
-                className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-medium text-black transition hover:bg-orange-400"
-              >
-                Connect with Swiggy
-              </Link>
+              <>
+                {hasOAuthConfigured && (
+                  <Link
+                    href="/api/auth/login"
+                    className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-medium text-black transition hover:bg-orange-400"
+                  >
+                    Connect with Swiggy
+                  </Link>
+                )}
+                {isDev && hasDevToken && (
+                  <Link
+                    href="/api/auth/dev-login"
+                    className="rounded-full border border-orange-500/50 px-5 py-2.5 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:text-orange-200"
+                  >
+                    Dev login (personal token)
+                  </Link>
+                )}
+                {isDev && !hasDevToken && !hasOAuthConfigured && (
+                  <p className="text-sm text-zinc-500">
+                    Add <code className="text-zinc-300">SWIGGY_ACCESS_TOKEN</code> or{" "}
+                    <code className="text-zinc-300">SWIGGY_CLIENT_ID</code> to{" "}
+                    <code className="text-zinc-300">.env.local</code> to connect.
+                  </p>
+                )}
+              </>
             ) : (
               <>
                 <Link
@@ -92,7 +117,7 @@ export default async function Home({
           </div>
         </div>
 
-        {!isLoggedIn && (
+        {!isLoggedIn && !isDev && (
           <p className="text-sm text-zinc-500">
             OAuth requires a Builders Club <code className="text-zinc-300">client_id</code>.
             The flow is wired — once Swiggy sends credentials, Connect will open
