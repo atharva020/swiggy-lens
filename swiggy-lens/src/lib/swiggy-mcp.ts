@@ -12,6 +12,8 @@ export type SwiggyMCPClient = Client;
 
 export interface SwiggyMCPClients {
   food: SwiggyMCPClient;
+  instamart: SwiggyMCPClient | null;
+  dineout: SwiggyMCPClient | null;
 }
 
 async function connectMCPClient(
@@ -35,19 +37,35 @@ async function connectMCPClient(
   return client;
 }
 
-/**
- * Creates MCP clients for Swiggy verticals.
- * Day 1: food only. Day 3 adds instamart + dineout to the same return shape.
- */
+async function tryConnectMCPClient(
+  serverUrl: string,
+  accessToken: string
+): Promise<Client | null> {
+  try {
+    return await connectMCPClient(serverUrl, accessToken);
+  } catch {
+    return null;
+  }
+}
+
 export async function createMCPClients(
   accessToken: string
 ): Promise<SwiggyMCPClients> {
-  const food = await connectMCPClient(SWIGGY_MCP_SERVERS.food, accessToken);
-  return { food };
+  const [food, instamart, dineout] = await Promise.all([
+    connectMCPClient(SWIGGY_MCP_SERVERS.food, accessToken),
+    tryConnectMCPClient(SWIGGY_MCP_SERVERS.instamart, accessToken),
+    tryConnectMCPClient(SWIGGY_MCP_SERVERS.dineout, accessToken),
+  ]);
+
+  return { food, instamart, dineout };
 }
 
 export async function closeMCPClients(clients: SwiggyMCPClients): Promise<void> {
-  await clients.food.close();
+  await Promise.allSettled([
+    clients.food.close(),
+    clients.instamart?.close(),
+    clients.dineout?.close(),
+  ]);
 }
 
 function contentToText(content: ContentBlock[]): string {
