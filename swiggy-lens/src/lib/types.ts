@@ -1,0 +1,19 @@
+export type FoodMode = "cooking" | "ordering" | "social" | "mixed";
+
+export type Confidence = "high" | "medium" | "low";
+
+export type InsightTag = "mode" | "spend" | "cuisine" | "pattern";
+
+export interface InsightCard {
+  title: string;
+  body: string;
+  tag: InsightTag;
+}
+
+export interface InsightsResponse {
+  mode: FoodMode;
+  confidence: Confidence;
+  modeLabel: string;
+  modeSummary: string;
+  insights: InsightCard[];
+}
