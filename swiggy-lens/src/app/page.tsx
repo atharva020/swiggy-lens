@@ -1,6 +1,15 @@
 import Link from "next/link";
 
+import { FoodModeBar } from "@/components/FoodModeBar";
+import { InsightCard } from "@/components/InsightCard";
+import { runInsightsAgent } from "@/lib/claude-agent";
 import { getSession, isAccessTokenValid } from "@/lib/session";
+import { closeMCPClients, createMCPClients } from "@/lib/swiggy-mcp";
+import type { InsightsResponse } from "@/lib/types";
+
+const isDev = process.env.NODE_ENV === "development";
+const hasOAuthConfigured = Boolean(process.env.SWIGGY_CLIENT_ID?.trim());
+const hasDevToken = Boolean(process.env.SWIGGY_ACCESS_TOKEN?.trim());
 
 const ERROR_MESSAGES: Record<string, string> = {
   oauth_not_configured:
@@ -13,16 +22,25 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 function getErrorMessage(error?: string) {
-  if (!error) {
-    return null;
-  }
-
+  if (!error) return null;
   return ERROR_MESSAGES[error] ?? decodeURIComponent(error);
 }
 
-const isDev = process.env.NODE_ENV === "development";
-const hasOAuthConfigured = Boolean(process.env.SWIGGY_CLIENT_ID?.trim());
-const hasDevToken = Boolean(process.env.SWIGGY_ACCESS_TOKEN?.trim());
+async function fetchInsights(
+  accessToken: string
+): Promise<InsightsResponse | null> {
+  let clients;
+  try {
+    clients = await createMCPClients(accessToken);
+    return await runInsightsAgent(clients);
+  } catch {
+    return null;
+  } finally {
+    if (clients) {
+      await closeMCPClients(clients);
+    }
+  }
+}
 
 export default async function Home({
   searchParams,
@@ -35,45 +53,122 @@ export default async function Home({
   const errorMessage = getErrorMessage(params.error);
   const isDevMode = params.mode === "dev";
 
+  let insights: InsightsResponse | null = null;
+  let insightsError: string | null = null;
+
+  if (isLoggedIn && session.accessToken) {
+    insights = await fetchInsights(session.accessToken);
+    if (!insights) {
+      insightsError =
+        "Could not load insights right now. MCP or Claude may be unavailable.";
+    }
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
-      <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-8 px-6 py-16">
-        <div className="space-y-3">
-          <p className="text-sm uppercase tracking-[0.2em] text-orange-400">
-            SwiggyLens
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight">
-            See your food life clearly
-          </h1>
-          <p className="text-lg text-zinc-400">
-            Cross-vertical food intelligence powered by Swiggy MCP — food
-            delivery, Instamart, and dine-in in one reasoning loop.
-          </p>
+      <main className="mx-auto w-full max-w-3xl px-6 py-12">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <p className="mb-1 text-xs uppercase tracking-[0.2em] text-orange-400">
+              SwiggyLens
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Your food life, clearly
+            </h1>
+          </div>
+          {isLoggedIn && (
+            <Link
+              href="/api/auth/logout"
+              className="rounded-full border border-zinc-700 px-4 py-1.5 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
+            >
+              Log out
+            </Link>
+          )}
         </div>
 
+        {/* Connect banner when logged in fresh */}
         {params.connected === "1" && (
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
             {isDevMode
-              ? "Dev mode: personal token loaded. Full MCP + agent pipeline ready to test."
-              : "Connected to Swiggy. Your access token is stored securely in the server session."}
+              ? "Dev mode: personal token loaded."
+              : "Connected to Swiggy."}
           </div>
         )}
 
+        {/* OAuth error banner */}
         {errorMessage && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {errorMessage}
           </div>
         )}
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
-          <p className="mb-4 text-sm text-zinc-400">Authentication status</p>
-          <p className="mb-6 text-xl font-medium">
-            {isLoggedIn ? "Connected to Swiggy" : "Not connected"}
-          </p>
+        {/* ── LOGGED IN ── */}
+        {isLoggedIn ? (
+          <div className="flex flex-col gap-6">
+            {/* Food Mode Bar */}
+            {insights ? (
+              <FoodModeBar
+                mode={insights.mode}
+                confidence={insights.confidence}
+                modeLabel={insights.modeLabel}
+                modeSummary={insights.modeSummary}
+              />
+            ) : (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-6 py-5">
+                {insightsError ? (
+                  <p className="text-sm text-red-300">{insightsError}</p>
+                ) : (
+                  <p className="text-sm text-zinc-500">
+                    Loading food mode...
+                  </p>
+                )}
+              </div>
+            )}
 
-          <div className="flex flex-wrap gap-3">
-            {!isLoggedIn ? (
-              <>
+            {/* Insight Cards */}
+            {insights && insights.insights.length > 0 && (
+              <div>
+                <p className="mb-3 text-xs uppercase tracking-widest text-zinc-500">
+                  Insights
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {insights.insights.map((card, i) => (
+                    <InsightCard
+                      key={i}
+                      title={card.title}
+                      body={card.body}
+                      tag={card.tag}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action bar */}
+            <div className="flex gap-3">
+              <Link
+                href="/api/auth/test-mcp"
+                className="rounded-full border border-zinc-700 px-4 py-2 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
+              >
+                Test MCP
+              </Link>
+            </div>
+          </div>
+        ) : (
+          /* ── NOT LOGGED IN ── */
+          <div className="flex flex-col gap-6">
+            <p className="text-lg text-zinc-400">
+              Cross-vertical food intelligence — food delivery, Instamart, and
+              dine-in in one reasoning loop. Connect your Swiggy account to see
+              your food mode and behavioral insights.
+            </p>
+
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
+              <p className="mb-5 text-sm text-zinc-400">
+                Connect to get started
+              </p>
+              <div className="flex flex-wrap gap-3">
                 {hasOAuthConfigured && (
                   <Link
                     href="/api/auth/login"
@@ -92,37 +187,26 @@ export default async function Home({
                 )}
                 {isDev && !hasDevToken && !hasOAuthConfigured && (
                   <p className="text-sm text-zinc-500">
-                    Add <code className="text-zinc-300">SWIGGY_ACCESS_TOKEN</code> or{" "}
+                    Add{" "}
+                    <code className="text-zinc-300">SWIGGY_ACCESS_TOKEN</code>{" "}
+                    or{" "}
                     <code className="text-zinc-300">SWIGGY_CLIENT_ID</code> to{" "}
-                    <code className="text-zinc-300">.env.local</code> to connect.
+                    <code className="text-zinc-300">.env.local</code> to
+                    connect.
                   </p>
                 )}
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/api/auth/test-mcp"
-                  className="rounded-full bg-zinc-100 px-5 py-2.5 text-sm font-medium text-zinc-950 transition hover:bg-white"
-                >
-                  Test MCP connection
-                </Link>
-                <Link
-                  href="/api/auth/logout"
-                  className="rounded-full border border-zinc-700 px-5 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-500"
-                >
-                  Log out
-                </Link>
-              </>
+              </div>
+            </div>
+
+            {!isDev && !hasOAuthConfigured && (
+              <p className="text-sm text-zinc-600">
+                OAuth requires a Builders Club{" "}
+                <code className="text-zinc-500">client_id</code>. The flow is
+                wired — once Swiggy sends credentials, Connect will open phone
+                + OTP login.
+              </p>
             )}
           </div>
-        </div>
-
-        {!isLoggedIn && !isDev && (
-          <p className="text-sm text-zinc-500">
-            OAuth requires a Builders Club <code className="text-zinc-300">client_id</code>.
-            The flow is wired — once Swiggy sends credentials, Connect will open
-            phone + OTP login.
-          </p>
         )}
       </main>
     </div>
