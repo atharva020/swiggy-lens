@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 export interface SessionData {
   codeVerifier?: string;
   oauthState?: string;
+  oauthClientId?: string;
+  oauthClientSecret?: string;
   accessToken?: string;
   refreshToken?: string;
   expiresAt?: number;
@@ -22,7 +24,10 @@ export const sessionOptions: SessionOptions = {
 
 export function isSessionConfigured(): boolean {
   const secret = process.env.SESSION_SECRET?.trim();
-  return Boolean(secret && secret.length >= 32);
+  if (secret && secret.length >= 32) {
+    return true;
+  }
+  return process.env.NODE_ENV === "development";
 }
 
 export async function getSession() {
@@ -41,6 +46,8 @@ export function isAccessTokenValid(session: SessionData): boolean {
 export async function clearAuthSession(session: IronSession<SessionData>) {
   delete session.codeVerifier;
   delete session.oauthState;
+  delete session.oauthClientId;
+  delete session.oauthClientSecret;
   delete session.accessToken;
   delete session.refreshToken;
   delete session.expiresAt;

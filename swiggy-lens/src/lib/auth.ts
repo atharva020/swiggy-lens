@@ -2,7 +2,18 @@ import crypto from "node:crypto";
 
 export const SWIGGY_AUTHORIZE_URL = "https://mcp.swiggy.com/auth/authorize";
 export const SWIGGY_TOKEN_URL = "https://mcp.swiggy.com/auth/token";
+export const SWIGGY_REGISTER_URL = "https://mcp.swiggy.com/auth/register";
 export const SWIGGY_OAUTH_SCOPES = "mcp:tools mcp:resources mcp:prompts";
+
+export interface DynamicClientRegistration {
+  client_id: string;
+  client_name?: string;
+  redirect_uris?: string[];
+  grant_types?: string[];
+  response_types?: string[];
+  token_endpoint_auth_method?: string;
+  client_secret?: string;
+}
 
 export interface SwiggyOAuthConfig {
   clientId?: string;
@@ -46,6 +57,53 @@ export function getAppBaseUrl() {
   return process.env.NEXTAUTH_URL?.trim() ?? "http://localhost:3000";
 }
 
+/**
+ * RFC 7591 Dynamic Client Registration — no manual client_id required.
+ * @see https://mcp.swiggy.com/builders/docs/start/authenticate/
+ */
+export async function registerDynamicClient(
+  redirectUri: string
+): Promise<DynamicClientRegistration> {
+  const response = await fetch(SWIGGY_REGISTER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      client_name: "swiggy-lens",
+      redirect_uris: [redirectUri],
+      grant_types: ["authorization_code"],
+      response_types: ["code"],
+      token_endpoint_auth_method: "none",
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(
+      `Swiggy client registration failed (${response.status}): ${errorBody}`
+    );
+  }
+
+  return response.json() as Promise<DynamicClientRegistration>;
+}
+
+/** Env client_id if set; otherwise register via DCR. */
+export async function resolveOAuthClient(redirectUri: string): Promise<{
+  clientId: string;
+  clientSecret?: string;
+}> {
+  const { clientId, clientSecret } = getSwiggyOAuthConfig();
+
+  if (clientId) {
+    return { clientId, clientSecret };
+  }
+
+  const registration = await registerDynamicClient(redirectUri);
+  return { clientId: registration.client_id };
+}
+
 export function buildAuthorizationUrl(params: {
   clientId: string;
   redirectUri: string;
@@ -66,17 +124,20 @@ export function buildAuthorizationUrl(params: {
 export async function exchangeAuthorizationCode(params: {
   code: string;
   codeVerifier: string;
-  clientId: string;
-  clientSecret?: string;
   redirectUri: string;
+  clientId?: string;
+  clientSecret?: string;
 }): Promise<SwiggyTokenResponse> {
   const body: Record<string, string> = {
     grant_type: "authorization_code",
     code: params.code,
     code_verifier: params.codeVerifier,
-    client_id: params.clientId,
     redirect_uri: params.redirectUri,
   };
+
+  if (params.clientId) {
+    body.client_id = params.clientId;
+  }
 
   if (params.clientSecret) {
     body.client_secret = params.clientSecret;

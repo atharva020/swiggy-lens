@@ -34,19 +34,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${baseUrl}/?error=missing_verifier`);
   }
 
-  const { clientId, clientSecret, redirectUri } = getSwiggyOAuthConfig();
-
-  if (!clientId) {
-    return NextResponse.redirect(`${baseUrl}/?error=oauth_not_configured`);
-  }
+  const { redirectUri } = getSwiggyOAuthConfig();
+  const clientId =
+    session.oauthClientId ?? getSwiggyOAuthConfig().clientId ?? undefined;
+  const clientSecret =
+    session.oauthClientSecret ?? getSwiggyOAuthConfig().clientSecret;
 
   try {
     const tokenResponse = await exchangeAuthorizationCode({
       code,
       codeVerifier: session.codeVerifier,
+      redirectUri,
       clientId,
       clientSecret,
-      redirectUri,
     });
 
     session.accessToken = tokenResponse.access_token;
@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
     session.isLoggedIn = true;
     delete session.codeVerifier;
     delete session.oauthState;
+    delete session.oauthClientId;
+    delete session.oauthClientSecret;
     await session.save();
 
     return NextResponse.redirect(`${baseUrl}/?connected=1`);

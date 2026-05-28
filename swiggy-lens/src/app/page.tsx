@@ -3,19 +3,20 @@ import Link from "next/link";
 import { FoodModeBar } from "@/components/FoodModeBar";
 import { InsightCard } from "@/components/InsightCard";
 import { runInsightsAgent } from "@/lib/claude-agent";
-import { getSession, isAccessTokenValid } from "@/lib/session";
+import {
+  getSession,
+  isAccessTokenValid,
+  isSessionConfigured,
+} from "@/lib/session";
 import { closeMCPClients, createMCPClients } from "@/lib/swiggy-mcp";
 import type { InsightsResponse } from "@/lib/types";
 
 const isDev = process.env.NODE_ENV === "development";
-const hasOAuthConfigured = Boolean(process.env.SWIGGY_CLIENT_ID?.trim());
 const hasDevToken = Boolean(process.env.SWIGGY_ACCESS_TOKEN?.trim());
 
 const ERROR_MESSAGES: Record<string, string> = {
-  oauth_not_configured:
-    "Swiggy OAuth is not configured yet. Add SWIGGY_CLIENT_ID to .env.local once Builders Club approves your app.",
   session_not_configured:
-    "SESSION_SECRET is missing or too short. Set a random 32+ character string in .env.local.",
+    "SESSION_SECRET is missing or too short (min 32 chars). Required in production; recommended in local dev.",
   invalid_state: "OAuth state mismatch. Please try connecting again.",
   missing_verifier: "OAuth session expired. Please try connecting again.",
   missing_code: "Swiggy did not return an authorization code.",
@@ -50,6 +51,7 @@ export default async function Home({
   const params = await searchParams;
   const session = await getSession();
   const isLoggedIn = isAccessTokenValid(session);
+  const canConnectSwiggy = isSessionConfigured();
   const errorMessage = getErrorMessage(params.error);
   const isDevMode = params.mode === "dev";
 
@@ -169,7 +171,7 @@ export default async function Home({
                 Connect to get started
               </p>
               <div className="flex flex-wrap gap-3">
-                {hasOAuthConfigured && (
+                {canConnectSwiggy && (
                   <Link
                     href="/api/auth/login"
                     className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-medium text-black transition hover:bg-orange-400"
@@ -185,25 +187,21 @@ export default async function Home({
                     Dev login (personal token)
                   </Link>
                 )}
-                {isDev && !hasDevToken && !hasOAuthConfigured && (
+                {!canConnectSwiggy && isDev && !hasDevToken && (
                   <p className="text-sm text-zinc-500">
-                    Add{" "}
-                    <code className="text-zinc-300">SWIGGY_ACCESS_TOKEN</code>{" "}
-                    or{" "}
-                    <code className="text-zinc-300">SWIGGY_CLIENT_ID</code> to{" "}
-                    <code className="text-zinc-300">.env.local</code> to
-                    connect.
+                    Set <code className="text-zinc-300">SESSION_SECRET</code> in{" "}
+                    <code className="text-zinc-300">.env.local</code> to enable
+                    Connect with Swiggy (OAuth via Dynamic Client Registration).
                   </p>
                 )}
               </div>
             </div>
 
-            {!isDev && !hasOAuthConfigured && (
+            {canConnectSwiggy && (
               <p className="text-sm text-zinc-600">
-                OAuth requires a Builders Club{" "}
-                <code className="text-zinc-500">client_id</code>. The flow is
-                wired — once Swiggy sends credentials, Connect will open phone
-                + OTP login.
+                Connect uses Swiggy OAuth 2.1 + PKCE with automatic client
+                registration — phone + OTP on Swiggy, no manual client_id
+                required for localhost.
               </p>
             )}
           </div>
