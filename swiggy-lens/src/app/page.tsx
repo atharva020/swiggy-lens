@@ -150,6 +150,12 @@ export default async function Home({
             {/* Action bar */}
             <div className="flex gap-3">
               <Link
+                href="/chat"
+                className="rounded-full bg-orange-500/10 border border-orange-500/40 px-5 py-2 text-sm font-medium text-orange-300 transition hover:bg-orange-500/20 hover:border-orange-400"
+              >
+                Ask SwiggyLens →
+              </Link>
+              <Link
                 href="/api/auth/test-mcp"
                 className="rounded-full border border-zinc-700 px-4 py-2 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
               >
