@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FoodModeBar } from "@/components/FoodModeBar";
 import { InsightCard } from "@/components/InsightCard";
+import { SpendChart } from "@/components/SpendChart";
 import { runInsightsAgent } from "@/lib/claude-agent";
 import {
   getSession,
@@ -144,6 +145,25 @@ export default async function Home({
                     />
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Spend Chart */}
+            {insights?.spend && <SpendChart spend={insights.spend} />}
+
+            {/* Loading skeleton when no data yet and no error */}
+            {!insights && !insightsError && (
+              <div className="flex flex-col gap-3">
+                <p className="text-xs uppercase tracking-widest text-zinc-600">
+                  Insights
+                </p>
+                {[1, 2, 3, 4].map((n) => (
+                  <div
+                    key={n}
+                    className="h-20 animate-pulse rounded-xl bg-zinc-800/60"
+                  />
+                ))}
+                <div className="h-28 animate-pulse rounded-2xl bg-zinc-800/60" />
               </div>
             )}
 
