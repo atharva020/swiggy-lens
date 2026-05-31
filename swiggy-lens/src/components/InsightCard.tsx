@@ -19,6 +19,11 @@ const TAG_CONFIG: Record<InsightTag, { label: string; classes: string }> = {
   },
 };
 
+const FALLBACK_TAG_CONFIG = {
+  label: "Insight",
+  classes: "bg-zinc-700/40 text-zinc-400 border-zinc-700",
+};
+
 interface InsightCardProps {
   title: string;
   body: string;
@@ -26,7 +31,7 @@ interface InsightCardProps {
 }
 
 export function InsightCard({ title, body, tag }: InsightCardProps) {
-  const tagConfig = TAG_CONFIG[tag];
+  const tagConfig = TAG_CONFIG[tag] ?? FALLBACK_TAG_CONFIG;
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 transition-colors hover:border-zinc-700 hover:bg-zinc-900">

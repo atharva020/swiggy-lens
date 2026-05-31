@@ -87,7 +87,45 @@ See [full architecture →](docs/architecture.md)
 
 ---
 
-## Tech Stack
+## Demo
+
+**What the demo shows (in order):**
+
+1. App opens → **food mode auto-detected** (Cooking / Ordering / Social / Mixed) with confidence bar
+2. **Proactive insight cards** populate with real data from all 3 Swiggy verticals — no prompting
+3. **Spend breakdown chart** — how much you spent across Food, Instamart, and Dineout this month
+4. **Chat** — ask a cross-vertical question ("how much did I spend across everything last month?")
+5. Claude responds with **real numbers pulled from live MCP tool calls**
+
+> Demo video: *(link coming — to be recorded on staging access)*
+
+---
+
+## Running Locally
+
+```bash
+git clone https://github.com/atharvachirde/swiggy-lens
+cd swiggy-lens/swiggy-lens
+npm install
+cp .env.example .env.local
+# fill in OPENAI_API_KEY (or ANTHROPIC_API_KEY) and SESSION_SECRET
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+**Quick auth options:**
+
+| Scenario | What to do |
+|---|---|
+| Full OAuth (phone + OTP) | Set `SESSION_SECRET` ≥ 32 chars → click "Connect with Swiggy" |
+| Dev token bypass | Set `SWIGGY_ACCESS_TOKEN` from Cursor/Claude MCP session → click "Dev login" |
+
+See [`.env.example`](swiggy-lens/.env.example) for all variables.
+
+---
+
+
 
 | Layer | Technology |
 |---|---|
@@ -117,11 +155,11 @@ See [full MCP integration details →](docs/mcp-integration.md)
 ## Roadmap
 
 ### v1 — Core Intelligence
-- [ ] Swiggy OAuth + cross-vertical data fetch
-- [ ] Food mode detection engine
-- [ ] Proactive insight cards (4 types)
-- [ ] Natural language chat over order history
-- [ ] Cross-vertical spend dashboard
+- [x] Swiggy OAuth + cross-vertical data fetch
+- [x] Food mode detection engine
+- [x] Proactive insight cards (4 types)
+- [x] Natural language chat over order history
+- [x] Cross-vertical spend dashboard
 
 ### v2 — Behavioral Depth
 - [ ] Food personality profile (shareable)
