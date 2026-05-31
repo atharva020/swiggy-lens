@@ -6,7 +6,7 @@ import type { InsightsResponse } from "./types";
 
 const anthropic = new Anthropic();
 
-async function gatherVerticalData(clients: SwiggyMCPClients): Promise<{
+export async function gatherVerticalData(clients: SwiggyMCPClients): Promise<{
   foodData: unknown;
   instamartData: unknown;
   dineoutData: unknown;
@@ -48,7 +48,7 @@ async function gatherVerticalData(clients: SwiggyMCPClients): Promise<{
   return { foodData, instamartData, dineoutData, unavailableVerticals };
 }
 
-function buildUserMessage(
+export function buildDataContext(
   foodData: unknown,
   instamartData: unknown,
   dineoutData: unknown,
@@ -68,11 +68,17 @@ function buildUserMessage(
     sections.push(`## Dineout Bookings\n${JSON.stringify(dineoutData, null, 2)}`);
   }
 
-  const note = DATA_UNAVAILABLE_NOTE(unavailableVerticals);
+  return sections.join("\n\n") + DATA_UNAVAILABLE_NOTE(unavailableVerticals);
+}
 
+function buildUserMessage(
+  foodData: unknown,
+  instamartData: unknown,
+  dineoutData: unknown,
+  unavailableVerticals: string[]
+): string {
   return (
-    sections.join("\n\n") +
-    note +
+    buildDataContext(foodData, instamartData, dineoutData, unavailableVerticals) +
     "\n\nAnalyze this data and return the JSON response as specified."
   );
 }

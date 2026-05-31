@@ -17,3 +17,10 @@ export interface InsightsResponse {
   modeSummary: string;
   insights: InsightCard[];
 }
+
+export type ChatRole = "user" | "assistant";
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
