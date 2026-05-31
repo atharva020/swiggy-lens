@@ -10,12 +10,19 @@ export interface InsightCard {
   tag: InsightTag;
 }
 
+export interface VerticalSpend {
+  food: number;
+  instamart: number;
+  dineout: number;
+}
+
 export interface InsightsResponse {
   mode: FoodMode;
   confidence: Confidence;
   modeLabel: string;
   modeSummary: string;
   insights: InsightCard[];
+  spend?: VerticalSpend;
 }
 
 export type ChatRole = "user" | "assistant";

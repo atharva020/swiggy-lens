@@ -2,9 +2,33 @@ import Anthropic from "@anthropic-ai/sdk";
 
 import { DATA_UNAVAILABLE_NOTE, FOOD_MODE_SYSTEM_PROMPT } from "./food-mode-engine";
 import { callMCPTool, type SwiggyMCPClients } from "./swiggy-mcp";
-import type { InsightsResponse } from "./types";
+import type { InsightsResponse, VerticalSpend } from "./types";
 
 const anthropic = new Anthropic();
+
+function extractSpend(
+  foodData: unknown,
+  instamartData: unknown,
+  dineoutData: unknown
+): VerticalSpend {
+  const sum = (data: unknown, priceKey: string): number => {
+    if (!Array.isArray(data)) return 0;
+    return data.reduce((acc: number, order: unknown) => {
+      if (order && typeof order === "object") {
+        const val = (order as Record<string, unknown>)[priceKey];
+        if (typeof val === "number") return acc + val;
+        if (typeof val === "string") return acc + parseFloat(val || "0");
+      }
+      return acc;
+    }, 0);
+  };
+
+  return {
+    food: Math.round(sum(foodData, "order_total") || sum(foodData, "total_price") || sum(foodData, "bill_total")),
+    instamart: Math.round(sum(instamartData, "order_total") || sum(instamartData, "bill_total") || sum(instamartData, "total_price")),
+    dineout: Math.round(sum(dineoutData, "bill_total") || sum(dineoutData, "total_amount") || sum(dineoutData, "order_total")),
+  };
+}
 
 export async function gatherVerticalData(clients: SwiggyMCPClients): Promise<{
   foodData: unknown;
@@ -109,5 +133,6 @@ export async function runInsightsAgent(
   }
 
   const parsed = JSON.parse(textBlock.text) as InsightsResponse;
+  parsed.spend = extractSpend(foodData, instamartData, dineoutData);
   return parsed;
 }
