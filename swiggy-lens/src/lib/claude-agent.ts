@@ -57,17 +57,12 @@ export async function gatherVerticalData(clients: SwiggyMCPClients): Promise<{
     unavailableVerticals.push("Instamart");
   }
 
-  let dineoutData: unknown = null;
-  if (clients.dineout) {
-    dineoutData = await callMCPTool(clients.dineout, "get_bookings", {
-      limit: 100,
-    }).catch(() => {
-      unavailableVerticals.push("Dineout");
-      return null;
-    });
-  } else {
-    unavailableVerticals.push("Dineout");
-  }
+  // Dineout has no list/history endpoint over MCP — get_booking_status only
+  // returns a single booking by id, which we cannot enumerate. So dineout
+  // history is unavailable for cross-vertical insights until Swiggy exposes a
+  // bookings-list tool. See docs/swiggy-mcp-tools.md.
+  const dineoutData: unknown = null;
+  unavailableVerticals.push("Dineout");
 
   return { foodData, instamartData, dineoutData, unavailableVerticals };
 }
