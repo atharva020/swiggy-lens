@@ -1,10 +1,8 @@
-import Anthropic from "@anthropic-ai/sdk";
-
 import { DATA_UNAVAILABLE_NOTE, FOOD_MODE_SYSTEM_PROMPT } from "./food-mode-engine";
+import { complete } from "./llm";
+import { withRetry } from "./retry";
 import { callMCPTool, type SwiggyMCPClients } from "./swiggy-mcp";
 import type { InsightsResponse, VerticalSpend } from "./types";
-
-const anthropic = new Anthropic();
 
 function extractSpend(
   foodData: unknown,
@@ -38,18 +36,20 @@ export async function gatherVerticalData(clients: SwiggyMCPClients): Promise<{
 }> {
   const unavailableVerticals: string[] = [];
 
-  const foodData = await callMCPTool(clients.food, "get_food_orders", {
-    limit: 100,
-  }).catch(() => {
+  const foodData = await withRetry(
+    () => callMCPTool(clients.food, "get_food_orders", { limit: 100 }),
+    { attempts: 2, timeoutMs: 15_000 }
+  ).catch(() => {
     unavailableVerticals.push("food delivery");
     return null;
   });
 
   let instamartData: unknown = null;
   if (clients.instamart) {
-    instamartData = await callMCPTool(clients.instamart, "get_orders", {
-      limit: 100,
-    }).catch(() => {
+    instamartData = await withRetry(
+      () => callMCPTool(clients.instamart!, "get_orders", { limit: 100 }),
+      { attempts: 2, timeoutMs: 15_000 }
+    ).catch(() => {
       unavailableVerticals.push("Instamart");
       return null;
     });
@@ -58,9 +58,7 @@ export async function gatherVerticalData(clients: SwiggyMCPClients): Promise<{
   }
 
   // Dineout has no list/history endpoint over MCP — get_booking_status only
-  // returns a single booking by id, which we cannot enumerate. So dineout
-  // history is unavailable for cross-vertical insights until Swiggy exposes a
-  // bookings-list tool. See docs/swiggy-mcp-tools.md.
+  // returns a single booking by id, which we cannot enumerate.
   const dineoutData: unknown = null;
   unavailableVerticals.push("Dineout");
 
@@ -115,19 +113,18 @@ export async function runInsightsAgent(
     unavailableVerticals
   );
 
-  const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
+  const text = await complete({
     system: FOOD_MODE_SYSTEM_PROMPT,
     messages: [{ role: "user", content: userMessage }],
   });
 
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Claude returned no text response");
+  // Extract JSON from response (handles markdown code blocks)
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error("LLM did not return valid JSON");
   }
 
-  const parsed = JSON.parse(textBlock.text) as InsightsResponse;
+  const parsed = JSON.parse(jsonMatch[0]) as InsightsResponse;
   parsed.spend = extractSpend(foodData, instamartData, dineoutData);
   return parsed;
 }

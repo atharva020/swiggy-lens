@@ -17,36 +17,36 @@ export default async function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-950 text-zinc-50">
+    <div className="flex h-screen flex-col">
       {/* Header */}
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-6 py-4">
+      <header className="flex shrink-0 items-center justify-between border-b border-line px-6 py-4">
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="text-xs text-zinc-500 transition hover:text-zinc-300"
+            className="text-xs text-muted transition hover:text-cream"
           >
             ← Dashboard
           </Link>
-          <span className="text-zinc-700">|</span>
-          <div>
-            <span className="text-xs uppercase tracking-[0.2em] text-orange-400">
-              SwiggyLens
+          <span className="text-line">/</span>
+          <div className="flex items-center gap-2">
+            <span className="grid h-6 w-6 place-items-center rounded-md bg-saffron text-xs font-bold text-ink">
+              S
             </span>
-            <span className="ml-2 text-sm font-medium text-zinc-200">
-              Chat
+            <span className="font-display text-base font-semibold text-cream">
+              Ask SwiggyLens
             </span>
           </div>
         </div>
         <Link
           href="/api/auth/logout"
-          className="rounded-full border border-zinc-700 px-4 py-1.5 text-xs text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-200"
+          className="rounded-full border border-line px-4 py-1.5 text-xs text-cream-dim transition hover:border-muted hover:text-cream"
         >
           Log out
         </Link>
       </header>
 
       {/* Chat fills remaining height */}
-      <div className="mx-auto w-full max-w-2xl flex-1 overflow-hidden px-6 py-6 flex flex-col">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-hidden px-6 py-6">
         <ChatInterface />
       </div>
     </div>

@@ -4,8 +4,7 @@ interface Bar {
   label: string;
   icon: string;
   value: number;
-  colorFill: string;
-  colorText: string;
+  color: string;
 }
 
 function formatRupees(n: number): string {
@@ -19,67 +18,57 @@ interface SpendChartProps {
 
 export function SpendChart({ spend }: SpendChartProps) {
   const bars: Bar[] = [
-    {
-      label: "Food Delivery",
-      icon: "📦",
-      value: spend.food,
-      colorFill: "bg-orange-500",
-      colorText: "text-orange-400",
-    },
-    {
-      label: "Instamart",
-      icon: "🛒",
-      value: spend.instamart,
-      colorFill: "bg-emerald-500",
-      colorText: "text-emerald-400",
-    },
-    {
-      label: "Dineout",
-      icon: "🍽️",
-      value: spend.dineout,
-      colorFill: "bg-blue-500",
-      colorText: "text-blue-400",
-    },
+    { label: "Food Delivery", icon: "🛵", value: spend.food, color: "var(--saffron)" },
+    { label: "Instamart", icon: "🛒", value: spend.instamart, color: "var(--tan)" },
+    { label: "Dineout", icon: "🍽️", value: spend.dineout, color: "var(--paarl)" },
   ].filter((b) => b.value > 0);
 
   const total = bars.reduce((s, b) => s + b.value, 0);
-
   if (total === 0) return null;
 
   const max = Math.max(...bars.map((b) => b.value));
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
-      <div className="mb-4 flex items-baseline justify-between">
-        <p className="text-xs uppercase tracking-widest text-zinc-500">
-          Spend breakdown
+    <section className="rounded-2xl border border-line bg-surface/70 p-6">
+      <div className="mb-6 flex items-baseline justify-between">
+        <p className="kicker">Where it went</p>
+        <p className="flex items-baseline gap-1.5">
+          <span className="nums font-display text-2xl font-semibold text-cream">
+            {formatRupees(total)}
+          </span>
+          <span className="text-xs text-muted">total</span>
         </p>
-        <span className="text-sm font-medium text-zinc-200">
-          {formatRupees(total)} total
-        </span>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-5">
         {bars.map((bar) => {
           const widthPct = max > 0 ? Math.round((bar.value / max) * 100) : 0;
           const sharePct = total > 0 ? Math.round((bar.value / total) * 100) : 0;
 
           return (
             <div key={bar.label}>
-              <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 text-zinc-300">
+              <div className="mb-1.5 flex items-baseline justify-between text-sm">
+                <span className="flex items-center gap-2 text-cream-dim">
                   <span>{bar.icon}</span>
                   {bar.label}
                 </span>
-                <span className={`font-medium ${bar.colorText}`}>
-                  {formatRupees(bar.value)}{" "}
-                  <span className="text-zinc-600">({sharePct}%)</span>
+                <span className="nums flex items-baseline gap-1.5">
+                  <span
+                    className="font-display font-semibold"
+                    style={{ color: bar.color }}
+                  >
+                    {formatRupees(bar.value)}
+                  </span>
+                  <span className="text-xs text-muted">{sharePct}%</span>
                 </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-2">
                 <div
-                  className={`h-full rounded-full ${bar.colorFill} transition-all`}
-                  style={{ width: `${widthPct}%` }}
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${widthPct}%`,
+                    background: `linear-gradient(90deg, ${bar.color}, color-mix(in srgb, ${bar.color} 55%, var(--saffron-soft)))`,
+                  }}
                 />
               </div>
             </div>
@@ -87,19 +76,18 @@ export function SpendChart({ spend }: SpendChartProps) {
         })}
       </div>
 
-      {/* Stacked proportion strip */}
-      <div className="mt-4 flex h-1.5 w-full overflow-hidden rounded-full">
-        {bars.map((bar) => {
-          const pct = total > 0 ? (bar.value / total) * 100 : 0;
-          return (
-            <div
-              key={bar.label}
-              className={`${bar.colorFill}`}
-              style={{ width: `${pct}%` }}
-            />
-          );
-        })}
+      {/* stacked proportion strip */}
+      <div className="mt-6 flex h-1.5 w-full overflow-hidden rounded-full">
+        {bars.map((bar) => (
+          <div
+            key={bar.label}
+            style={{
+              width: `${(bar.value / total) * 100}%`,
+              backgroundColor: bar.color,
+            }}
+          />
+        ))}
       </div>
-    </div>
+    </section>
   );
 }

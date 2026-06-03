@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
+import { getCached, setCache } from "@/lib/cache";
 import { runInsightsAgent } from "@/lib/claude-agent";
 import { getSession, isAccessTokenValid } from "@/lib/session";
 import { closeMCPClients, createMCPClients } from "@/lib/swiggy-mcp";
+import type { InsightsResponse } from "@/lib/types";
 
 export async function GET() {
   const session = await getSession();
@@ -14,11 +16,18 @@ export async function GET() {
     );
   }
 
+  const cacheKey = `insights:${session.accessToken.slice(-12)}`;
+  const cached = getCached<InsightsResponse>(cacheKey);
+  if (cached) {
+    return NextResponse.json(cached);
+  }
+
   let clients;
 
   try {
     clients = await createMCPClients(session.accessToken);
     const insights = await runInsightsAgent(clients);
+    setCache(cacheKey, insights, 5 * 60 * 1000);
     return NextResponse.json(insights);
   } catch (error) {
     const message =

@@ -1,19 +1,126 @@
 @import "tailwindcss";
 
+/* ── SwiggyLens "Food Almanac" theme ──────────────────────────────
+   Swiggy-branded warm palette. Espresso-paarl dark base, cream ink,
+   a light→deep tangerine range (kept distinguishable for charts),
+   and a single red reserved strictly for errors. Editorial display
+   serif over a clean grotesk body. */
+
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --ink: #17110b; /* deep paarl-tinted espresso */
+  --ink-2: #201711; /* raised surface */
+  --surface: #271c13; /* card */
+  --surface-2: #33251a; /* hover / inset */
+  --line: #3d2c1e; /* hairline border (warm) */
+  --cream: #f8efe2; /* primary text */
+  --cream-dim: #d4c2ab; /* secondary text */
+  --muted: #98836c; /* tertiary / labels */
+
+  /* Swiggy brand ramp, light → deep */
+  --saffron: #fc8019; /* Vivid Tangerine — primary logo color */
+  --saffron-soft: #fd9139; /* Neon Carrot — accent / highlight */
+  --carrot: #fd9139; /* Neon Carrot (alias for semantic use) */
+  --tan: #fca65e; /* Tan Hide — secondary / button */
+  --paarl: #ad4728; /* Paarl — deep brand accent */
+
+  --berry: #e8556a; /* error only */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-cream: var(--cream);
+  --color-cream-dim: var(--cream-dim);
+  --color-muted: var(--muted);
+  --color-saffron: var(--saffron);
+  --color-saffron-soft: var(--saffron-soft);
+  --color-carrot: var(--carrot);
+  --color-tan: var(--tan);
+  --color-paarl: var(--paarl);
+  --color-berry: var(--berry);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background-color: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  /* warm radial glow — Swiggy light spilling from the top corners */
+  background-image:
+    radial-gradient(
+      60rem 40rem at 8% -10%,
+      rgba(252, 128, 25, 0.16),
+      transparent 60%
+    ),
+    radial-gradient(
+      48rem 36rem at 100% 0%,
+      rgba(173, 71, 40, 0.16),
+      transparent 55%
+    );
+  background-attachment: fixed;
+}
+
+/* fine grain overlay for tactile, non-flat surfaces */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* keep app content above the grain layer */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* tracked-out uppercase kicker label used throughout */
+.kicker {
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* tabular figures for stat readouts */
+.nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+::selection {
+  background: rgba(252, 128, 25, 0.3);
+  color: var(--cream);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise {
+  animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

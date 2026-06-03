@@ -2,40 +2,38 @@ import type { Confidence, FoodMode } from "@/lib/types";
 
 const MODE_CONFIG: Record<
   FoodMode,
-  { icon: string; label: string; color: string }
+  { word: string; glyph: string; accent: string; glow: string }
 > = {
   cooking: {
-    icon: "🍳",
-    label: "Cooking Mode",
-    color: "text-emerald-400",
+    word: "Cooking",
+    glyph: "🍳",
+    accent: "var(--tan)",
+    glow: "rgba(252, 166, 94, 0.20)",
   },
   ordering: {
-    icon: "📦",
-    label: "Ordering Mode",
-    color: "text-orange-400",
+    word: "Ordering",
+    glyph: "🛵",
+    accent: "var(--saffron)",
+    glow: "rgba(252, 128, 25, 0.22)",
   },
   social: {
-    icon: "🍽️",
-    label: "Social Mode",
-    color: "text-blue-400",
+    word: "Social",
+    glyph: "🍽️",
+    accent: "var(--paarl)",
+    glow: "rgba(173, 71, 40, 0.26)",
   },
   mixed: {
-    icon: "🔀",
-    label: "Mixed Mode",
-    color: "text-purple-400",
+    word: "Mixed",
+    glyph: "🔀",
+    accent: "var(--carrot)",
+    glow: "rgba(253, 145, 57, 0.20)",
   },
 };
 
 const CONFIDENCE_PERCENT: Record<Confidence, number> = {
-  high: 85,
-  medium: 55,
-  low: 30,
-};
-
-const CONFIDENCE_LABEL: Record<Confidence, string> = {
-  high: "High confidence",
-  medium: "Medium confidence",
-  low: "Low confidence",
+  high: 88,
+  medium: 56,
+  low: 28,
 };
 
 interface FoodModeBarProps {
@@ -52,39 +50,58 @@ export function FoodModeBar({
 }: FoodModeBarProps) {
   const config = MODE_CONFIG[mode];
   const percent = CONFIDENCE_PERCENT[confidence];
-  const filledBars = Math.round((percent / 100) * 12);
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <span className="text-3xl">{config.icon}</span>
-        <div>
-          <p className="text-xs uppercase tracking-widest text-zinc-500">
-            Current Mode
-          </p>
-          <h2 className={`text-2xl font-semibold ${config.color}`}>
-            {config.label}
-          </h2>
-        </div>
+    <section
+      className="rise relative overflow-hidden rounded-[1.75rem] border border-line bg-surface px-7 py-8 sm:px-9 sm:py-10"
+      style={{
+        backgroundImage: `radial-gradient(36rem 18rem at 88% -30%, ${config.glow}, transparent 70%)`,
+      }}
+    >
+      {/* glyph watermark, oversized + cropped, top-right */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-6 -top-10 select-none text-[12rem] leading-none opacity-[0.07] sm:text-[15rem]"
+      >
+        {config.glyph}
+      </span>
+
+      <p className="kicker">Current Food Mode</p>
+
+      <div className="mt-3 flex items-end gap-4">
+        <h2 className="font-display text-6xl font-semibold leading-[0.9] tracking-tight text-cream sm:text-7xl">
+          {config.word}
+        </h2>
+        <span
+          className="mb-2 inline-block h-3 w-3 rounded-full"
+          style={{ backgroundColor: config.accent }}
+        />
       </div>
 
-      <div className="mb-3 flex items-center gap-3">
-        <div className="flex gap-0.5">
-          {Array.from({ length: 12 }).map((_, i) => (
+      <p className="mt-5 max-w-xl font-display text-lg italic leading-snug text-cream-dim sm:text-xl">
+        {modeSummary}
+      </p>
+
+      {/* confidence readout */}
+      <div className="mt-7 flex items-center gap-4">
+        <div className="flex-1">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-2">
             <div
-              key={i}
-              className={`h-2 w-5 rounded-sm ${
-                i < filledBars ? "bg-orange-500" : "bg-zinc-700"
-              }`}
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${percent}%`,
+                background: `linear-gradient(90deg, ${config.accent}, var(--saffron-soft))`,
+              }}
             />
-          ))}
+          </div>
         </div>
-        <span className="text-xs text-zinc-400">
-          {CONFIDENCE_LABEL[confidence]}
-        </span>
+        <div className="flex items-baseline gap-1.5">
+          <span className="nums font-display text-xl font-semibold text-cream">
+            {percent}
+          </span>
+          <span className="text-xs text-muted">% confidence</span>
+        </div>
       </div>
-
-      <p className="text-sm text-zinc-400">{modeSummary}</p>
-    </div>
+    </section>
   );
 }
