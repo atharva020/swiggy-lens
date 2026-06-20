@@ -1,29 +1,28 @@
 @import "tailwindcss";
 
-/* ── SwiggyLens "Food Almanac" theme ──────────────────────────────
-   Swiggy-branded warm palette. Espresso-paarl dark base, cream ink,
-   a light→deep tangerine range (kept distinguishable for charts),
-   and a single red reserved strictly for errors. Editorial display
-   serif over a clean grotesk body. */
+/* ── SwiggyLens — Swiggy-native light theme ─────────────────────
+   Matches Swiggy app: white surfaces, #282C3F text, #FC8019 CTAs,
+   subtle borders and card shadows. No grain, no dark editorial glow. */
 
 :root {
-  --ink: #17110b; /* deep paarl-tinted espresso */
-  --ink-2: #201711; /* raised surface */
-  --surface: #271c13; /* card */
-  --surface-2: #33251a; /* hover / inset */
-  --line: #3d2c1e; /* hairline border (warm) */
-  --cream: #f8efe2; /* primary text */
-  --cream-dim: #d4c2ab; /* secondary text */
-  --muted: #98836c; /* tertiary / labels */
+  --ink: #fcfcfc; /* page background */
+  --ink-2: #f0f0f5; /* inset / track */
+  --surface: #ffffff; /* cards */
+  --surface-2: #f8f8f8; /* hover / secondary fill */
+  --line: #e8e8e8; /* borders */
+  --cream: #282c3f; /* primary text (Swiggy heading color) */
+  --cream-dim: #686b78; /* secondary text */
+  --muted: #93959f; /* tertiary / labels */
 
-  /* Swiggy brand ramp, light → deep */
-  --saffron: #fc8019; /* Vivid Tangerine — primary logo color */
-  --saffron-soft: #fd9139; /* Neon Carrot — accent / highlight */
-  --carrot: #fd9139; /* Neon Carrot (alias for semantic use) */
-  --tan: #fca65e; /* Tan Hide — secondary / button */
-  --paarl: #ad4728; /* Paarl — deep brand accent */
+  /* Swiggy brand ramp */
+  --saffron: #fc8019;
+  --saffron-soft: #e67317; /* hover / pressed */
+  --carrot: #fd9139;
+  --tan: #fca65e;
+  --paarl: #ad4728;
 
-  --berry: #e8556a; /* error only */
+  --berry: #e23744; /* Swiggy error red */
+  --success: #60b246;
 }
 
 @theme inline {
@@ -41,79 +40,59 @@
   --color-tan: var(--tan);
   --color-paarl: var(--paarl);
   --color-berry: var(--berry);
+  --color-success: var(--success);
 
-  --font-display: var(--font-display);
+  --font-display: var(--font-sans);
   --font-sans: var(--font-sans);
+
+  --shadow-card: 0 2px 8px rgba(40, 44, 63, 0.08);
+  --shadow-nav: 0 1px 4px rgba(40, 44, 63, 0.08);
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   background-color: var(--ink);
   color: var(--cream);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  /* warm radial glow — Swiggy light spilling from the top corners */
-  background-image:
-    radial-gradient(
-      60rem 40rem at 8% -10%,
-      rgba(252, 128, 25, 0.16),
-      transparent 60%
-    ),
-    radial-gradient(
-      48rem 36rem at 100% 0%,
-      rgba(173, 71, 40, 0.16),
-      transparent 55%
-    );
-  background-attachment: fixed;
-}
-
-/* fine grain overlay for tactile, non-flat surfaces */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* keep app content above the grain layer */
-body > * {
-  position: relative;
-  z-index: 1;
 }
 
 .font-display {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* tracked-out uppercase kicker label used throughout */
+/* section label — Swiggy-style small caps, not ultra-tracked */
 .kicker {
-  font-size: 0.6875rem;
-  letter-spacing: 0.22em;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
 }
 
-/* tabular figures for stat readouts */
 .nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
+.card {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
 ::selection {
-  background: rgba(252, 128, 25, 0.3);
+  background: rgba(252, 128, 25, 0.2);
   color: var(--cream);
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -122,5 +101,5 @@ body > * {
 }
 
 .rise {
-  animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

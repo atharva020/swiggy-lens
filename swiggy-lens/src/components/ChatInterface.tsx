@@ -16,7 +16,7 @@ function MarkdownText({ text }: { text: string }) {
   const formatted = text
     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-cream font-semibold">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code class="rounded bg-ink-2 px-1.5 py-0.5 text-xs text-saffron-soft">$1</code>')
+    .replace(/`(.*?)`/g, '<code class="rounded bg-ink-2 px-1.5 py-0.5 text-xs text-saffron">$1</code>')
     .replace(/₹([\d,.]+)/g, '<span class="nums font-semibold text-saffron">₹$1</span>');
 
   return (
@@ -140,20 +140,20 @@ export function ChatInterface() {
   const isEmpty = messages.length === 0;
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Message stream */}
+    <div className="flex min-h-0 flex-1 flex-col">
       <div
         ref={scrollRef}
-        className="flex-1 space-y-4 overflow-y-auto px-1 py-2"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-2"
       >
         {isEmpty && (
-          <div className="flex flex-col gap-5 pt-6">
+          <div className="flex flex-col gap-5 pt-2 sm:pt-4">
             <div>
-              <p className="font-display text-2xl italic leading-snug text-cream-dim">
-                Ask anything about your food life.
+              <p className="text-lg font-semibold leading-snug text-cream sm:text-xl">
+                Ask about your food life
               </p>
-              <p className="mt-2 text-sm text-muted">
-                Delivery, groceries, dine-outs — grounded in your real Swiggy data.
+              <p className="mt-2 text-sm leading-relaxed text-cream-dim">
+                Cross-vertical answers from your Food, Instamart, and Dineout
+                history.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -162,7 +162,7 @@ export function ChatInterface() {
                   key={s}
                   type="button"
                   onClick={() => send(s)}
-                  className="rounded-full border border-line bg-surface/60 px-4 py-2 text-sm text-cream-dim transition hover:border-saffron/40 hover:bg-surface-2/70 hover:text-cream"
+                  className="rounded-md border border-line bg-surface px-3 py-2 text-sm text-cream-dim shadow-sm transition hover:border-saffron hover:text-cream"
                 >
                   {s}
                 </button>
@@ -180,8 +180,8 @@ export function ChatInterface() {
             <div
               className={`max-w-[85%] px-4 py-2.5 text-[0.9375rem] leading-relaxed ${
                 m.role === "user"
-                  ? "rounded-[1.25rem] rounded-br-md bg-saffron font-medium text-ink"
-                  : "rounded-[1.25rem] rounded-bl-md border border-line bg-surface text-cream"
+                  ? "rounded-2xl rounded-br-md bg-saffron font-medium text-white"
+                  : "rounded-2xl rounded-bl-md border border-line bg-surface text-cream shadow-sm"
               }`}
             >
               {m.content ? (
@@ -224,12 +224,12 @@ export function ChatInterface() {
           onKeyDown={handleKeyDown}
           placeholder="Ask about your food life…"
           disabled={streaming}
-          className="flex-1 rounded-full border border-line bg-surface px-5 py-3 text-sm text-cream placeholder:text-muted focus:border-saffron/60 focus:outline-none disabled:opacity-60"
+          className="flex-1 rounded-md border border-line bg-surface px-4 py-3 text-sm text-cream placeholder:text-muted focus:border-saffron focus:outline-none disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={streaming || !input.trim()}
-          className="rounded-full bg-saffron px-6 py-3 text-sm font-semibold text-ink transition hover:bg-saffron-soft disabled:opacity-40"
+          className="rounded-md bg-saffron px-5 py-3 text-sm font-semibold text-white transition hover:bg-saffron-soft disabled:opacity-40"
         >
           {streaming ? "…" : "Send"}
         </button>

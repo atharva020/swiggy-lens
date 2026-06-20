@@ -16,31 +16,23 @@ interface InsightCardProps {
   tag: InsightTag;
 }
 
-export function InsightCard({ index, title, body, tag }: InsightCardProps) {
+export function InsightCard({ title, body, tag }: InsightCardProps) {
   const tagConfig = TAG_CONFIG[tag] ?? FALLBACK_TAG_CONFIG;
 
   return (
-    <article className="group relative flex flex-col rounded-2xl border border-line bg-surface/70 p-6 transition-colors duration-300 hover:border-saffron/40 hover:bg-surface-2/70">
-      {/* index + tag row */}
-      <div className="mb-4 flex items-center justify-between">
-        <span className="nums font-display text-sm font-semibold text-muted">
-          {String(index).padStart(2, "0")}
-        </span>
-        <span className="kicker flex items-center gap-2">
-          <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{ backgroundColor: tagConfig.dot }}
-          />
-          {tagConfig.label}
-        </span>
-      </div>
+    <article className="card p-5 transition-shadow hover:shadow-[0_4px_12px_rgba(40,44,63,0.1)]">
+      <span className="kicker inline-flex items-center gap-2">
+        <span
+          className="inline-block h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: tagConfig.dot }}
+        />
+        {tagConfig.label}
+      </span>
 
-      <h3 className="font-display text-xl font-semibold leading-tight text-cream">
+      <h3 className="mt-3 text-base font-semibold leading-snug text-cream">
         {title}
       </h3>
-      <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-cream-dim">
-        {body}
-      </p>
+      <p className="mt-2 text-sm leading-relaxed text-cream-dim">{body}</p>
     </article>
   );
 }

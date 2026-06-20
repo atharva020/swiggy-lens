@@ -10,19 +10,19 @@ import type { InsightsResponse } from "@/lib/types";
 function Skeleton() {
   return (
     <div className="flex flex-col gap-6">
-      <div className="h-56 animate-pulse rounded-[1.75rem] bg-surface/60" />
+      <div className="h-48 animate-pulse rounded-2xl bg-ink-2" />
       <div>
-        <p className="kicker mb-3">Reading your week…</p>
+        <div className="mb-4 h-4 w-32 animate-pulse rounded bg-ink-2" />
         <div className="grid gap-4 sm:grid-cols-2">
           {[1, 2, 3, 4].map((n) => (
             <div
               key={n}
-              className="h-36 animate-pulse rounded-2xl bg-surface/60"
+              className="h-32 animate-pulse rounded-2xl bg-ink-2"
             />
           ))}
         </div>
       </div>
-      <div className="h-44 animate-pulse rounded-2xl bg-surface/60" />
+      <div className="h-40 animate-pulse rounded-2xl bg-ink-2" />
     </div>
   );
 }
@@ -61,11 +61,11 @@ export function InsightsPanel() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-berry/30 bg-berry/10 px-6 py-5">
+      <div className="rounded-lg border border-berry/30 bg-berry/10 px-6 py-5">
         <p className="text-sm text-cream-dim">{error}</p>
         <button
           onClick={fetchInsights}
-          className="mt-3 rounded-full border border-berry/40 px-4 py-1.5 text-xs text-cream-dim transition hover:border-berry hover:text-cream"
+          className="mt-3 rounded-md border border-berry/40 px-4 py-1.5 text-xs font-medium text-berry transition hover:bg-berry/5"
         >
           Try again
         </button>
@@ -78,7 +78,7 @@ export function InsightsPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-6">
       <FoodModeBar
         mode={insights.mode}
         confidence={insights.confidence}
@@ -88,10 +88,7 @@ export function InsightsPanel() {
 
       {insights.insights.length > 0 && (
         <div className="rise" style={{ animationDelay: "0.08s" }}>
-          <div className="mb-4 flex items-center gap-3">
-            <p className="kicker">What we noticed</p>
-            <span className="h-px flex-1 bg-line" />
-          </div>
+          <h2 className="mb-4 text-base font-semibold text-cream">Insights</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {insights.insights.map((card, i) => (
               <InsightCard
@@ -112,17 +109,20 @@ export function InsightsPanel() {
         </div>
       )}
 
-      {/* Refresh + timestamp */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-1">
         {lastUpdated && (
           <p className="text-xs text-muted">
-            Updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            Updated{" "}
+            {lastUpdated.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </p>
         )}
         <button
           onClick={fetchInsights}
           disabled={loading}
-          className="rounded-full border border-line px-3 py-1 text-xs text-muted transition hover:border-saffron/40 hover:text-cream-dim disabled:opacity-40"
+          className="rounded-md border border-line px-3 py-1 text-xs font-medium text-cream-dim transition hover:border-saffron hover:text-saffron disabled:opacity-40"
         >
           {loading ? "Refreshing…" : "Refresh"}
         </button>

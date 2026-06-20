@@ -2,7 +2,6 @@ import type { VerticalSpend } from "@/lib/types";
 
 interface Bar {
   label: string;
-  icon: string;
   value: number;
   color: string;
 }
@@ -18,9 +17,9 @@ interface SpendChartProps {
 
 export function SpendChart({ spend }: SpendChartProps) {
   const bars: Bar[] = [
-    { label: "Food Delivery", icon: "🛵", value: spend.food, color: "var(--saffron)" },
-    { label: "Instamart", icon: "🛒", value: spend.instamart, color: "var(--tan)" },
-    { label: "Dineout", icon: "🍽️", value: spend.dineout, color: "var(--paarl)" },
+    { label: "Food Delivery", value: spend.food, color: "var(--saffron)" },
+    { label: "Instamart", value: spend.instamart, color: "var(--tan)" },
+    { label: "Dineout", value: spend.dineout, color: "var(--paarl)" },
   ].filter((b) => b.value > 0);
 
   const total = bars.reduce((s, b) => s + b.value, 0);
@@ -29,11 +28,11 @@ export function SpendChart({ spend }: SpendChartProps) {
   const max = Math.max(...bars.map((b) => b.value));
 
   return (
-    <section className="rounded-2xl border border-line bg-surface/70 p-6">
+    <section className="card p-6">
       <div className="mb-6 flex items-baseline justify-between">
-        <p className="kicker">Where it went</p>
+        <p className="kicker">Spend by vertical</p>
         <p className="flex items-baseline gap-1.5">
-          <span className="nums font-display text-2xl font-semibold text-cream">
+          <span className="nums text-2xl font-bold text-cream">
             {formatRupees(total)}
           </span>
           <span className="text-xs text-muted">total</span>
@@ -49,12 +48,15 @@ export function SpendChart({ spend }: SpendChartProps) {
             <div key={bar.label}>
               <div className="mb-1.5 flex items-baseline justify-between text-sm">
                 <span className="flex items-center gap-2 text-cream-dim">
-                  <span>{bar.icon}</span>
+                  <span
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: bar.color }}
+                  />
                   {bar.label}
                 </span>
                 <span className="nums flex items-baseline gap-1.5">
                   <span
-                    className="font-display font-semibold"
+                    className="font-semibold"
                     style={{ color: bar.color }}
                   >
                     {formatRupees(bar.value)}
@@ -62,12 +64,12 @@ export function SpendChart({ spend }: SpendChartProps) {
                   <span className="text-xs text-muted">{sharePct}%</span>
                 </span>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-2">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-ink-2">
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${widthPct}%`,
-                    background: `linear-gradient(90deg, ${bar.color}, color-mix(in srgb, ${bar.color} 55%, var(--saffron-soft)))`,
+                    backgroundColor: bar.color,
                   }}
                 />
               </div>
@@ -76,7 +78,6 @@ export function SpendChart({ spend }: SpendChartProps) {
         })}
       </div>
 
-      {/* stacked proportion strip */}
       <div className="mt-6 flex h-1.5 w-full overflow-hidden rounded-full">
         {bars.map((bar) => (
           <div
